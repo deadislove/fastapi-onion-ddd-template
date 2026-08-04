@@ -77,7 +77,11 @@ jobs:
       security-events: write
     steps:
       - uses: actions/checkout@v4
-      - uses: docker/setup-buildx-action@v3
+      # v3 -> v4: routine major bump, verified via GitHub API (not a scraped page).
+      # Breaking changes in v4.0.0 (Node 24 runtime, removed deprecated inputs) don't
+      # apply here — this step passes no `with:` inputs and ubuntu-latest already has
+      # a current Node runtime. Pinned by commit SHA per the trivy-action lesson above.
+      - uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
       - uses: docker/build-push-action@v6
         with:
           context: .
@@ -105,7 +109,13 @@ jobs:
           # because of upstream base-image CVEs. Tighten to "1" once you're tracking these.
           exit-code: "0"
       - name: Upload scan results to the Security tab
-        uses: github/codeql-action/upload-sarif@v3
+        # v3 -> v4.37.4: v3 is slated for deprecation (Dec 2026 per GitHub's changelog).
+        # Only breaking change across the whole v3->v4 line is a Node.js 24 runtime bump
+        # (irrelevant on ubuntu-latest). Commit verified via GitHub API: the tag object
+        # itself is unsigned (normal for codeql-action's bot-driven release process), but
+        # the commit it points to is GPG-verified and a legitimate merge from a real
+        # @github.com author into releases/v4 (PR #4053).
+        uses: github/codeql-action/upload-sarif@f205ea1c3313d32999d8d6a48b4f6530d4437b38 # v4.37.4
         if: always()
         with:
           sarif_file: trivy-results.sarif

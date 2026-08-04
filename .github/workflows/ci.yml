@@ -98,7 +98,7 @@ jobs:
           # because of upstream base-image CVEs. Tighten to "1" once you're tracking these.
           exit-code: "0"
       - name: Upload scan results to the Security tab
-        uses: github/codeql-action/upload-sarif@v3
+        uses: github/codeql-action/upload-sarif@v4.37.4
         if: always()
         with:
           sarif_file: trivy-results.sarif

@@ -1,0 +1,120 @@
+services:
+  # ─── FastAPI Application ───────────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    container_name: fastapi-onion-ddd-api
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/appdb
+      - REDIS_URL=redis://redis:6379/0
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-change-me-in-production-super-secret-key}
+      - JWT_ALGORITHM=HS256
+      - JWT_ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - JWT_REFRESH_TOKEN_EXPIRE_DAYS=7
+      - RATE_LIMIT_PER_MINUTE=60
+      - DEBUG=false
+      - OTEL_ENABLED=true
+      - OTEL_SERVICE_NAME=fastapi-onion-ddd-template
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger:4318/v1/traces
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      jaeger:
+        condition: service_started
+      migrate:
+        condition: service_completed_successfully
+    restart: unless-stopped
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  # ─── PostgreSQL Database ───────────────────────────────────────────────────
+  db:
+    image: postgres:15-alpine
+    container_name: fastapi-onion-ddd-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: appdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d appdb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ─── Redis (JWT revocation store) ──────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: fastapi-onion-ddd-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+
+  # ─── Jaeger (trace viewer — OTLP receiver built in since 1.35) ────────────
+  jaeger:
+    image: jaegertracing/all-in-one:1.57
+    container_name: fastapi-onion-ddd-jaeger
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - "16686:16686"  # Web UI
+      - "4318:4318"    # OTLP/HTTP receiver
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  # ─── Alembic Migrations (run-once) ────────────────────────────────────────
+  # Creates the schema on a fresh DB, applies deltas on an existing one, no-ops if
+  # already at head. `api` waits for this to complete successfully before starting;
+  # the app also re-runs `alembic upgrade head` on its own boot as a harmless,
+  # idempotent safety net (e.g. for bare `uvicorn` dev runs without this service).
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    container_name: fastapi-onion-ddd-migrate
+    command: ["alembic", "upgrade", "head"]
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgres@db:5432/appdb
+    depends_on:
+      db:
+        condition: service_healthy
+    networks:
+      - app-network
+    restart: "no"
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  app-network:
+    driver: bridge

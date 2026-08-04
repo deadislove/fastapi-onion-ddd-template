@@ -1,0 +1,5 @@
+# Owners must be a GitHub username (@user) or team (@org/team) with repo access —
+# plain names are silently ignored. Rules are evaluated top-to-bottom; the LAST
+# matching rule wins, so keep "*" first if more specific paths are added below.
+
+*   @deadislove

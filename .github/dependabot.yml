@@ -1,0 +1,19 @@
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    # requirements.txt / requirements-dev.txt are generated from the .in files
+    # (see README's "Dependency Locking" section) — Dependabot opens PRs bumping
+    # the pinned/hashed output directly, which is what actually ships.
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: "weekly"

@@ -1,0 +1,41 @@
+# Version control
+.git
+.github
+
+# Python
+__pycache__
+*.py[cod]
+*.egg-info
+.venv
+venv
+.mypy_cache
+.pytest_cache
+.ruff_cache
+.coverage
+coverage.xml
+htmlcov
+
+# Local dev / secrets
+.env
+.env.*
+!.env.example
+*.db
+*.sqlite*
+
+# Dev-only dependency files — the image only ever installs requirements.txt
+requirements-dev.in
+requirements-dev.txt
+
+# Tests and docs — not needed at runtime
+tests
+README.md
+SECURITY.md
+LICENSE
+
+# Editor / OS
+.vscode
+.idea
+.DS_Store
+
+# Docker itself
+docker-compose.yml

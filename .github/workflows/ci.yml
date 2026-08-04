@@ -82,7 +82,7 @@ jobs:
       # apply here — this step passes no `with:` inputs and ubuntu-latest already has
       # a current Node runtime. Pinned by commit SHA per the trivy-action lesson above.
       - uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
-      - uses: docker/build-push-action@v6
+      - uses: docker/build-push-action@v7
         with:
           context: .
           target: runtime

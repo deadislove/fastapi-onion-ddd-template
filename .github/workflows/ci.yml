@@ -50,7 +50,12 @@ jobs:
           cache-dependency-path: requirements-dev.txt
       - run: pip install -r requirements-dev.txt
       - run: pytest --cov=app --cov-report=term-missing --cov-report=xml
-      - uses: actions/upload-artifact@v4
+      # v4 -> v7.0.1: only breaking changes across the whole line are Node.js runtime
+      # bumps (irrelevant on ubuntu-latest); v7's new opt-in `archive: false` direct-
+      # upload feature doesn't apply here since we don't set it — behavior for this
+      # step (zipped artifact named coverage-xml) is unchanged. Commit GPG-verified via
+      # GitHub API, real @github.com author, matches the v7.0.1 changelog.
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: coverage-xml
           path: coverage.xml

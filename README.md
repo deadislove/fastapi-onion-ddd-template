@@ -161,6 +161,12 @@ uv pip compile requirements-dev.in -o requirements-dev.txt --generate-hashes
 8. **Domain events are dispatched, not just declared** — entity mutators (`update_profile`, `Product.update`, etc.) queue events; `IEventDispatcher` (application layer) / `LoggingEventDispatcher` (infrastructure) publish them after the repository call, logged as structured JSON. Note: this happens before the request's DB transaction commits (no outbox pattern) — see `app/infrastructure/observability/event_dispatcher.py` for the tradeoff
 9. **List endpoints are capped** — `skip`/`limit` query params are bounded (`limit` 1-100) via `app/presentation/api/v1/pagination.py`, not raw unbounded ints
 
+For the full reasoning behind each of these — not just the rule but *why* — see
+[docs/](docs/README.md): [Architecture](docs/architecture.md),
+[Authentication](docs/authentication.md), [Error Handling](docs/error-handling.md),
+[Observability](docs/observability.md), [Database](docs/database.md), and
+[CI/CD & Supply Chain](docs/ci-cd.md).
+
 ## Environment Variables
 
 See `.env.example` for all available configuration options.

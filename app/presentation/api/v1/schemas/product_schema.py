@@ -8,7 +8,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, Field
 
-# ─── Request Schemas ──────────────────────────────────────────────────────────
+# Request Schemas
 
 class CreateProductRequest(BaseModel):
     name: str = Field(
@@ -66,7 +66,7 @@ class UpdateProductRequest(BaseModel):
     )
 
 
-# ─── Response Schemas ─────────────────────────────────────────────────────────
+# Response Schemas
 
 class ProductResponse(BaseModel):
     id: int = Field(..., examples=[1])

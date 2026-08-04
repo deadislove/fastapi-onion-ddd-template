@@ -26,7 +26,7 @@ from app.infrastructure.security.jwt_handler import JWTTokenService
 from app.infrastructure.security.password_hasher import BcryptPasswordHasher
 from app.infrastructure.security.token_revocation import RedisTokenRevocationStore
 
-# ─── Singletons (stateless, safe to reuse) ────────────────────────────────────
+# Singletons (stateless, safe to reuse)
 _password_hasher = BcryptPasswordHasher()
 _token_service = JWTTokenService()
 _redis_client = Redis.from_url(settings.REDIS_URL, decode_responses=True)
@@ -34,11 +34,11 @@ _revocation_store = RedisTokenRevocationStore(_redis_client)
 _event_dispatcher: IEventDispatcher = LoggingEventDispatcher()
 
 
-# ─── Session dependency ────────────────────────────────────────────────────────
+# Session dependency
 DBSession = Annotated[AsyncSession, Depends(get_db_session)]
 
 
-# ─── Repository factories ──────────────────────────────────────────────────────
+# Repository factories
 def get_user_repository(session: DBSession) -> SQLAlchemyUserRepository:
     return SQLAlchemyUserRepository(session)
 
@@ -47,7 +47,7 @@ def get_product_repository(session: DBSession) -> SQLAlchemyProductRepository:
     return SQLAlchemyProductRepository(session)
 
 
-# ─── Service factories ─────────────────────────────────────────────────────────
+# Service factories
 def get_auth_service() -> AuthService:
     return AuthService(
         password_hasher=_password_hasher,
@@ -79,7 +79,7 @@ def get_product_service(
     )
 
 
-# ─── Facade factories ──────────────────────────────────────────────────────────
+# Facade factories
 def get_user_facade(
     user_service: Annotated[UserService, Depends(get_user_service)],
     auth_service: Annotated[AuthService, Depends(get_auth_service)],
@@ -100,7 +100,7 @@ def get_user_product_facade(
     return UserProductFacade(user_facade=user_facade, product_facade=product_facade)
 
 
-# ─── Annotated type aliases for cleaner route signatures ──────────────────────
+# Annotated type aliases for cleaner route signatures
 UserFacadeDep = Annotated[UserFacade, Depends(get_user_facade)]
 ProductFacadeDep = Annotated[ProductFacade, Depends(get_product_facade)]
 UserProductFacadeDep = Annotated[UserProductFacade, Depends(get_user_product_facade)]

@@ -58,7 +58,7 @@ def _domain_error_to_http(error: DomainError) -> HTTPException:
     return HTTPException(status_code=http_status, detail=error.message)
 
 
-# ─── Auth Endpoints ───────────────────────────────────────────────────────────
+# Auth Endpoints
 
 @router.post(
     "/register",
@@ -165,7 +165,7 @@ async def logout(
     return MessageResponse(message="Logged out successfully.")
 
 
-# ─── User Profile Endpoints ───────────────────────────────────────────────────
+# User Profile Endpoints
 
 @router.get(
     "/me",
@@ -216,7 +216,7 @@ async def update_me(
     )
 
 
-# ─── Admin Endpoints ──────────────────────────────────────────────────────────
+# Admin Endpoints
 
 @router.get(
     "/",

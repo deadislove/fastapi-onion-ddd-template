@@ -8,7 +8,7 @@ from datetime import datetime
 
 from pydantic import BaseModel, EmailStr, Field, field_validator
 
-# ─── Request Schemas ──────────────────────────────────────────────────────────
+# Request Schemas
 
 class RegisterRequest(BaseModel):
     email: EmailStr = Field(
@@ -73,7 +73,7 @@ class LogoutRequest(BaseModel):
     )
 
 
-# ─── Response Schemas ─────────────────────────────────────────────────────────
+# Response Schemas
 
 class UserResponse(BaseModel):
     id: int = Field(..., examples=[1])

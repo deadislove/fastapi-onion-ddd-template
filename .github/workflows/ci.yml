@@ -50,11 +50,6 @@ jobs:
           cache-dependency-path: requirements-dev.txt
       - run: pip install -r requirements-dev.txt
       - run: pytest --cov=app --cov-report=term-missing --cov-report=xml
-      # v4 -> v7.0.1: only breaking changes across the whole line are Node.js runtime
-      # bumps (irrelevant on ubuntu-latest); v7's new opt-in `archive: false` direct-
-      # upload feature doesn't apply here since we don't set it — behavior for this
-      # step (zipped artifact named coverage-xml) is unchanged. Commit GPG-verified via
-      # GitHub API, real @github.com author, matches the v7.0.1 changelog.
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: coverage-xml
@@ -82,10 +77,6 @@ jobs:
       security-events: write
     steps:
       - uses: actions/checkout@v7
-      # v3 -> v4: routine major bump, verified via GitHub API (not a scraped page).
-      # Breaking changes in v4.0.0 (Node 24 runtime, removed deprecated inputs) don't
-      # apply here — this step passes no `with:` inputs and ubuntu-latest already has
-      # a current Node runtime. Pinned by commit SHA per the trivy-action lesson above.
       - uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4.2.0
       - uses: docker/build-push-action@v7
         with:
@@ -97,13 +88,9 @@ jobs:
           cache-from: type=gha
           cache-to: type=gha,mode=max
       - name: Scan image for OS/library vulnerabilities
-        # Pinned to a commit SHA, not a mutable version tag — aquasecurity/trivy-action
-        # had a supply-chain compromise on 2026-03-19 where an attacker force-pushed
-        # nearly every existing version tag (0.0.1-0.34.2, which covered the previous
-        # @0.24.0 pin here) to malicious commits that stole CI secrets. v0.36.0 postdates
-        # the fix and GitHub's immutable-releases protection; SHA verified independently
-        # via the GitHub API (tag ref -> tag object -> commit), not by trusting a scraped
-        # page. See https://github.com/aquasecurity/trivy/security/advisories/GHSA-69fq-xp46-6x23
+        # Pinned to a commit SHA, not a mutable tag — trivy-action had a supply-chain
+        # compromise (GHSA-69fq-xp46-6x23) where existing version tags were force-pushed
+        # to malicious commits. v0.36.0 postdates the fix.
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
           image-ref: fastapi-onion-ddd-template:ci
@@ -114,12 +101,6 @@ jobs:
           # because of upstream base-image CVEs. Tighten to "1" once you're tracking these.
           exit-code: "0"
       - name: Upload scan results to the Security tab
-        # v3 -> v4.37.4: v3 is slated for deprecation (Dec 2026 per GitHub's changelog).
-        # Only breaking change across the whole v3->v4 line is a Node.js 24 runtime bump
-        # (irrelevant on ubuntu-latest). Commit verified via GitHub API: the tag object
-        # itself is unsigned (normal for codeql-action's bot-driven release process), but
-        # the commit it points to is GPG-verified and a legitimate merge from a real
-        # @github.com author into releases/v4 (PR #4053).
         uses: github/codeql-action/upload-sarif@f205ea1c3313d32999d8d6a48b4f6530d4437b38 # v4.37.4
         if: always()
         with:

@@ -30,10 +30,7 @@ class Settings(BaseSettings):
     OTEL_SERVICE_NAME: str = "fastapi-onion-ddd-template"
     OTEL_EXPORTER_OTLP_ENDPOINT: str = "http://localhost:4318/v1/traces"
 
-    # CORS
-    # NOTE: "*" must never be combined with credentialed requests (cookies / Authorization
-    # headers) — browsers reject that combination per the CORS spec. Set explicit origins
-    # for any deployment that needs them. See main.py's CORSMiddleware wiring.
+    # CORS — "*" can't be combined with credentialed requests; browsers reject it.
     ALLOWED_ORIGINS: list[str] = ["http://localhost:3000"]
 
 

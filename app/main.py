@@ -51,10 +51,7 @@ def _run_migrations() -> None:
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Application lifespan — apply pending migrations on startup, then serve."""
     await asyncio.to_thread(_run_migrations)
-    # Alembic's fileConfig (see alembic/env.py) reconfigures the root logger's handlers
-    # from alembic.ini regardless of disable_existing_loggers — reassert our JSON logging
-    # setup so it isn't silently replaced by alembic's plain-text formatter for the rest
-    # of the process's life.
+    # Alembic's fileConfig resets the root logger's handlers on import — reassert JSON logging.
     configure_logging()
     yield
     await engine.dispose()
@@ -83,8 +80,6 @@ def create_app() -> FastAPI:
         ],
     )
 
-    # ─── Security scheme for Swagger UI ──────────────────────────────────────
-    # Allows developers to authorize directly in Swagger UI using Bearer tokens
     from fastapi.openapi.utils import get_openapi
 
     def custom_openapi() -> dict[str, Any]:
@@ -114,17 +109,13 @@ def create_app() -> FastAPI:
 
     app.openapi = custom_openapi  # type: ignore[method-assign]
 
-    # ─── Rate Limiter ─────────────────────────────────────────────────────────
     app.state.limiter = limiter
-    # slowapi's handler is typed narrowly for RateLimitExceeded specifically; Starlette's
-    # generic add_exception_handler overload wants a handler accepting any Exception.
-    # Correct at runtime — this is a stub-precision mismatch, not a real bug.
+    # slowapi's handler is typed for RateLimitExceeded; Starlette's add_exception_handler
+    # wants a handler for any Exception. Correct at runtime, just a stub mismatch.
     app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)  # type: ignore[arg-type]
     app.add_middleware(SlowAPIMiddleware)
 
-    # ─── CORS ─────────────────────────────────────────────────────────────────
-    # allow_credentials must be False when origins is the "*" wildcard — browsers
-    # reject that combination, and Starlette would otherwise echo it back unsafely.
+    # Browsers reject allow_credentials=True combined with a "*" origin.
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.ALLOWED_ORIGINS,
@@ -133,25 +124,18 @@ def create_app() -> FastAPI:
         allow_headers=["*"],
     )
 
-    # ─── Global Exception Handler ─────────────────────────────────────────────
     app.add_middleware(GlobalExceptionHandlerMiddleware)
     register_exception_handlers(app)
 
-    # ─── Request ID ───────────────────────────────────────────────────────────
-    # Added last so it's the outermost middleware — the request ID is bound before
-    # anything else runs (including the exception handler above) and is available
-    # for every log line and error response for this request.
+    # Outermost middleware, so the request ID is bound before anything else runs.
     app.add_middleware(RequestIDMiddleware)
 
-    # ─── OpenTelemetry Tracing (opt-in via OTEL_ENABLED) ──────────────────────
     configure_tracing(app)
 
-    # ─── API Routers ──────────────────────────────────────────────────────────
     api_v1_prefix = "/api/v1"
     app.include_router(users.router, prefix=api_v1_prefix)
     app.include_router(products.router, prefix=api_v1_prefix)
 
-    # ─── Health Check ─────────────────────────────────────────────────────────
     from fastapi import APIRouter
 
     health_router = APIRouter(tags=["Health"])

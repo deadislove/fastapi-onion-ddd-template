@@ -64,7 +64,7 @@ def _to_response(dto: ProductDTO) -> ProductResponse:
     )
 
 
-# ─── Public Endpoints ─────────────────────────────────────────────────────────
+# Public Endpoints
 
 @router.get(
     "/",
@@ -103,7 +103,7 @@ async def get_product(
     return _to_response(result.unwrap())
 
 
-# ─── Authenticated Endpoints ──────────────────────────────────────────────────
+# Authenticated Endpoints
 
 @router.post(
     "/",

@@ -28,6 +28,7 @@ WORKDIR /app
 # Install runtime system dependencies only
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
+    && apt-get purge -y --allow-remove-essential perl-base \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy virtual environment from builder

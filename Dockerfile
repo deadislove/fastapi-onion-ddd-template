@@ -29,7 +29,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
     && apt-get purge -y --allow-remove-essential --auto-remove \
-       perl-base util-linux mount ncurses-bin \
+       perl-base util-linux mount ncurses-bin gzip \
     && rm -rf /var/lib/apt/lists/* \
     && rm -rf /usr/local/lib/python3.11/ensurepip \
               /usr/local/lib/python3.11/site-packages/pip* \

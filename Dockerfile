@@ -29,10 +29,18 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libpq5 \
     && apt-get purge -y --allow-remove-essential perl-base \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && rm -rf /usr/local/lib/python3.11/ensurepip \
+              /usr/local/lib/python3.11/site-packages/pip* \
+              /usr/local/lib/python3.11/site-packages/setuptools* \
+              /usr/local/lib/python3.11/site-packages/wheel* \
+              /usr/local/bin/pip*
 
-# Copy virtual environment from builder
+# Copy virtual environment from builder, then drop the unused packaging
+# tooling it inherited from ensurepip (app never imports pip/setuptools/wheel)
 COPY --from=builder /opt/venv /opt/venv
+RUN rm -rf /opt/venv/lib/python3.11/site-packages/pip* \
+           /opt/venv/lib/python3.11/site-packages/setuptools*
 
 # Copy application source
 COPY --chown=appuser:appgroup . .

@@ -1,7 +1,7 @@
 # Source file for requirements.txt — edit this, then run:
 #   uv pip compile requirements.in -o requirements.txt --generate-hashes
 fastapi>=0.111.0
-uvicorn[standard]>=0.30.0
+uvicorn[standard]>=0.52.3
 sqlalchemy[asyncio]>=2.0.0
 asyncpg>=0.29.0
 aiosqlite>=0.20.0
